@@ -96,6 +96,7 @@ class ToDoListViewController: UITableViewController {
                     try self.realm.write {
                         let newItem = Item()
                         newItem.title = textField.text!
+                        newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 }catch {
@@ -133,33 +134,29 @@ class ToDoListViewController: UITableViewController {
 }
 
 //MARK: - Search bar methods
-//extension ToDoListViewController: UISearchBarDelegate {
-//
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//
-//        //Create new request
-//        let request : NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        //Modify the request with our query and descriptor
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        //Pass request to loadItems where it is performed
-//        loadItems(with: request, predicate: predicate)
-//    }
-//
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        if searchBar.text?.characters.count == 0 {
-//
-//            loadItems()
-//
-//            //Do remove the keyboard while on the main thread otherwise it won't work
-//            DispatchQueue.main.async {
-//                searchBar.resignFirstResponder() //i.e. go to the original state before you were activated
-//            }
-//        }
-//    }
-//
-//
-//}
+extension ToDoListViewController: UISearchBarDelegate {
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        //Query the database
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+        
+        tableView.reloadData()
+
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.characters.count == 0 {
+
+            loadItems()
+
+            //Do remove the keyboard while on the main thread otherwise it won't work
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder() //i.e. go to the original state before you were activated
+            }
+        }
+    }
+
+
+}
 
